@@ -326,6 +326,14 @@ class CompiledKernel:
         metadata['cluster_dims'] = tuple(metadata['cluster_dims'])
         KernelMetadata = namedtuple('KernelMetadata', sorted(list(metadata.keys())))
         self.metadata = KernelMetadata(**metadata)
+        self.useful_metadata = (
+            self.metadata.num_warps,
+            self.metadata.num_ctas,
+            self.metadata.shared,
+            self.metadata.cluster_dims[0],
+            self.metadata.cluster_dims[1],
+            self.metadata.cluster_dims[2],
+        )
         self.src = src
         self.hash = hash
         self.name = self.metadata.name
@@ -380,7 +388,7 @@ class CompiledKernel:
                 device = driver.active.get_current_device()
                 stream = driver.active.get_current_stream(device)
             launch_metadata = self.launch_metadata(grid, stream, *args)
-            self.run(grid[0], grid[1], grid[2], stream, self.function, self.metadata, launch_metadata,
+            self.run(grid[0], grid[1], grid[2], stream, self.function, self.useful_metadata, launch_metadata,
                      CompiledKernel.launch_enter_hook, CompiledKernel.launch_exit_hook, *args)
 
         return runner
