@@ -207,6 +207,8 @@ bool hasConvertToMMATransisitiveUse(Operation *op, Attribute encoding) {
   SmallVector<Value> queue = {op->getResult(0)};
   SetVector<Operation *> forwardSlice;
   llvm::SmallDenseSet<Value> seen;
+  llvm::SmallDenseSet<Operation *> seenOps; // facebook T170066846
+  bool isMMAV3 = cast<NvidiaMmaEncodingAttr>(encoding).getVersionMajor() == 3;
   while (!queue.empty()) {
     Value currentValue = queue.back();
     queue.pop_back();
@@ -252,6 +254,15 @@ bool hasConvertToMMATransisitiveUse(Operation *op, Attribute encoding) {
       bool isMMAV3 =
           isa<NvidiaMmaEncodingAttr>(encoding) &&
           cast<NvidiaMmaEncodingAttr>(encoding).getVersionMajor() == 3;
+      // facebook begin T170066846
+      // If an op is visited more than once, it indicates a loop and that
+      // mulitple operands of the op share the same mma layout. Allow the
+      // propagation to avoid unncessary layout conversion within the loop.
+      if (op->hasTrait<OpTrait::Elementwise>()) {
+        if (!seenOps.insert(op).second == true)
+          return true;
+      }
+      // facebook end T170066846
       if (isMMAV3 && (isa<LocalAllocOp>(op) || isa<LocalStoreOp>(op)))
         return true;
       auto yield = dyn_cast<scf::YieldOp>(op);
