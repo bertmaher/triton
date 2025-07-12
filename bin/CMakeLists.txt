@@ -91,3 +91,16 @@ target_link_libraries(triton-tensor-layout PRIVATE
   TritonTestDialect
   TritonAMDGPUTestAnalysis
   )
+
+add_llvm_executable(triton2cuda triton2cuda.cpp PARTIAL_SOURCES_INTENDED)
+
+llvm_update_compile_flags(triton2cuda)
+target_link_libraries(triton2cuda PRIVATE
+  ${dialect_libs}
+  ${conversion_libs}
+  ${triton_libs}
+  # MLIR core
+  MLIRParser
+  MLIRSupport
+  MLIRTransforms
+)
