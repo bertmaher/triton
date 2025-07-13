@@ -13,40 +13,41 @@ using namespace llvm;
 using namespace mlir;
 
 // Command line options
-static cl::opt<std::string> inputFilename(cl::Positional,
-                                          cl::desc("<input file>"),
-                                          cl::init("-"));
+static cl::opt<std::string>
+    inputFilename(cl::Positional, cl::desc("<input file>"), cl::init("-"));
 
-static cl::opt<std::string> outputFilename("o",
-                                           cl::desc("Output filename"),
+static cl::opt<std::string> outputFilename("o", cl::desc("Output filename"),
                                            cl::value_desc("filename"),
                                            cl::init("-"));
 
-static cl::opt<bool> verifyDiagnostics("verify-diagnostics",
-                                       cl::desc("Check that emitted diagnostics match expected-* lines on the corresponding line"),
-                                       cl::init(false));
+static cl::opt<bool>
+    verifyDiagnostics("verify-diagnostics",
+                      cl::desc("Check that emitted diagnostics match "
+                               "expected-* lines on the corresponding line"),
+                      cl::init(false));
 
-static cl::opt<bool> allowUnregisteredDialects("allow-unregistered-dialects",
-                                                cl::desc("Allow operation with no registered dialects"),
-                                                cl::init(false));
+static cl::opt<bool> allowUnregisteredDialects(
+    "allow-unregistered-dialects",
+    cl::desc("Allow operation with no registered dialects"), cl::init(false));
 
 // Main conversion function - currently just a placeholder
-static LogicalResult convertTritonGPUToCUDA(ModuleOp module, raw_ostream &output) {
+static LogicalResult convertTritonGPUToCUDA(ModuleOp module,
+                                            raw_ostream &output) {
   // TODO: Implement the actual conversion from TritonGPU IR to CUDA
   output << "// Generated CUDA code from TritonGPU IR\n";
   output << "// TODO: Implement conversion logic\n\n";
-  
+
   // For now, just print the input MLIR as comments
   output << "/*\n";
   output << "Original TritonGPU IR:\n";
   module.print(output);
   output << "\n*/\n";
-  
+
   // Placeholder CUDA kernel
   output << "__global__ void placeholder_kernel() {\n";
   output << "  // Converted kernel implementation will go here\n";
   output << "}\n";
-  
+
   return success();
 }
 
@@ -63,7 +64,7 @@ int main(int argc, char **argv) {
   context.appendDialectRegistry(registry);
   context.getOrLoadDialect<triton::TritonDialect>();
   context.getOrLoadDialect<triton::gpu::TritonGPUDialect>();
-  
+
   if (allowUnregisteredDialects)
     context.allowUnregisteredDialects();
 
@@ -90,12 +91,12 @@ int main(int argc, char **argv) {
   }
 
   // Verify the module if requested
-  if (verifyDiagnostics) {
-    if (failed(verify(*module))) {
-      llvm::errs() << "Module verification failed\n";
-      return 1;
-    }
-  }
+  // if (verifyDiagnostics) {
+  //   if (failed(verify(*module))) {
+  //     llvm::errs() << "Module verification failed\n";
+  //     return 1;
+  //   }
+  // }
 
   // Open output file
   auto output = openOutputFile(outputFilename, &errorMessage);

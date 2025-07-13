@@ -99,8 +99,12 @@ target_link_libraries(triton2cuda PRIVATE
   ${dialect_libs}
   ${conversion_libs}
   ${triton_libs}
+  # tests
+  TritonTestAnalysis
+  TritonTestDialect
+  TritonAMDGPUTestAnalysis
   # MLIR core
-  MLIRParser
-  MLIRSupport
+  MLIROptLib
+  MLIRPass
   MLIRTransforms
 )
