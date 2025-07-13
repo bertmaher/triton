@@ -2,6 +2,7 @@
 
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/MLIRContext.h"
+#include "mlir/IR/Verifier.h"
 #include "mlir/Parser/Parser.h"
 #include "mlir/Support/FileUtilities.h"
 #include "llvm/Support/CommandLine.h"
@@ -21,10 +22,9 @@ static cl::opt<std::string> outputFilename("o", cl::desc("Output filename"),
                                            cl::init("-"));
 
 static cl::opt<bool>
-    verifyDiagnostics("verify-diagnostics",
-                      cl::desc("Check that emitted diagnostics match "
-                               "expected-* lines on the corresponding line"),
-                      cl::init(false));
+    verifyModule("verify",
+                 cl::desc("Verify the module after parsing"),
+                 cl::init(true));
 
 static cl::opt<bool> allowUnregisteredDialects(
     "allow-unregistered-dialects",
@@ -91,12 +91,12 @@ int main(int argc, char **argv) {
   }
 
   // Verify the module if requested
-  // if (verifyDiagnostics) {
-  //   if (failed(verify(*module))) {
-  //     llvm::errs() << "Module verification failed\n";
-  //     return 1;
-  //   }
-  // }
+  if (verifyModule) {
+    if (failed(verify(*module))) {
+      llvm::errs() << "Module verification failed\n";
+      return 1;
+    }
+  }
 
   // Open output file
   auto output = openOutputFile(outputFilename, &errorMessage);
