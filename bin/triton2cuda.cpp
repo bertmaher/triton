@@ -6,6 +6,7 @@
 #include "mlir/IR/Visitors.h"
 #include "mlir/Parser/Parser.h"
 #include "mlir/Support/FileUtilities.h"
+#include "mlir/Dialect/Arith/IR/Arith.h"
 #include "triton/Dialect/Triton/IR/Dialect.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/InitLLVM.h"
@@ -41,17 +42,18 @@ public:
   std::stringstream codeStream;
 
 private:
-  std::unordered_map<Value, std::string> valueNames;
+  std::unordered_map<Value*, std::string> valueNames;
   int nextVarId = 0;
   
   std::string getValueName(Value value) {
-    auto it = valueNames.find(value);
+    Value* valuePtr = &value;
+    auto it = valueNames.find(valuePtr);
     if (it != valueNames.end()) {
       return it->second;
     }
     
     std::string name = "var" + std::to_string(nextVarId++);
-    valueNames[value] = name;
+    valueNames[valuePtr] = name;
     return name;
   }
   
